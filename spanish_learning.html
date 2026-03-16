@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Español Fun!</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#667eea 0%,#f093fb 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:14px;overflow-x:hidden;
+}
+.star{position:fixed;pointer-events:none;z-index:0;animation:starFloat linear infinite;opacity:0}
+@keyframes starFloat{0%{transform:translateY(100vh) rotate(0);opacity:0}10%{opacity:.5}90%{opacity:.5}100%{transform:translateY(-120px) rotate(360deg);opacity:0}}
+
+header{text-align:center;margin-bottom:10px;z-index:1;position:relative}
+header h1{font-family:'Fredoka One',cursive;font-size:clamp(2rem,8vw,3.4rem);color:#fff;text-shadow:3px 3px 0 rgba(0,0,0,.15),0 0 40px rgba(255,255,255,.4)}
+header p{font-size:clamp(.9rem,3vw,1.15rem);color:rgba(255,255,255,.9);font-weight:800;margin-top:2px}
+
+.score-bar{display:flex;gap:12px;align-items:center;justify-content:center;background:rgba(255,255,255,.25);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.4);border-radius:50px;padding:9px 22px;margin-bottom:10px;font-weight:900;font-size:1.1rem;color:#fff;z-index:1;position:relative}
+.stars{font-size:1.3rem;letter-spacing:2px}
+
+.progress-wrap{width:100%;max-width:520px;background:rgba(255,255,255,.25);border-radius:50px;height:13px;margin-bottom:14px;overflow:hidden;position:relative;z-index:1;border:2px solid rgba(255,255,255,.3)}
+.progress-fill{height:100%;background:linear-gradient(90deg,#a8ff78,#78ffd6);border-radius:50px;transition:width .5s ease}
+
+/* ── LEVEL SELECT SCREEN ── */
+.level-screen{background:rgba(255,255,255,.96);border-radius:36px;padding:32px 28px;max-width:540px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);text-align:center;z-index:1;position:relative;animation:cardIn .5s cubic-bezier(.34,1.56,.64,1)}
+.level-screen .top-emoji{font-size:4.5rem;display:block;margin-bottom:10px;animation:bounce 2s ease-in-out infinite}
+.level-screen h2{font-family:'Fredoka One',cursive;font-size:2.2rem;color:#7C4DFF;margin-bottom:6px}
+.level-screen .subtitle{font-size:1rem;font-weight:800;color:#78909C;margin-bottom:22px}
+.level-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:4px}
+.level-card{border:none;border-radius:24px;padding:20px 14px 16px;cursor:pointer;transition:transform .18s,box-shadow .18s;box-shadow:0 6px 0 rgba(0,0,0,.13);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:'Nunito',sans-serif}
+.level-card:hover{transform:translateY(-5px) scale(1.04);box-shadow:0 12px 0 rgba(0,0,0,.13)}
+.level-card:active{transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.1)}
+.level-card .lc-emoji{font-size:2.8rem}
+.level-card .lc-name{font-family:'Fredoka One',cursive;font-size:1.35rem}
+.level-card .lc-desc{font-size:.82rem;font-weight:800;color:#78909C;line-height:1.35}
+.lc-k  {background:linear-gradient(135deg,#fff9c4,#fff3e0);border:3px solid #FFD54F}
+.lc-1  {background:linear-gradient(135deg,#e3f2fd,#e8f5e9);border:3px solid #64B5F6}
+.lc-2  {background:linear-gradient(135deg,#f3e5f5,#fce4ec);border:3px solid #CE93D8}
+.lc-3  {background:linear-gradient(135deg,#e8f5e9,#e0f7fa);border:3px solid #66BB6A}
+
+/* ── CARD ── */
+.card{background:rgba(255,255,255,.96);border-radius:36px;padding:clamp(16px,4vw,30px);max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.18);text-align:center;position:relative;z-index:1;animation:cardIn .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cardIn{from{opacity:0;transform:scale(.82) translateY(24px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.q-label{font-size:clamp(.75rem,2.2vw,.9rem);font-weight:800;color:#B0BEC5;text-transform:uppercase;letter-spacing:1.5px}
+.level-badge{font-size:.82rem;font-weight:900;padding:4px 12px;border-radius:50px;color:#fff}
+.badge-k {background:#FFA726}
+.badge-1 {background:#42A5F5}
+.badge-2 {background:#AB47BC}
+.badge-3 {background:#66BB6A}
+
+/* play zone */
+.play-zone{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:22px;padding:18px 14px 14px;margin-bottom:16px}
+.play-zone-title{font-size:clamp(.82rem,2.5vw,.95rem);font-weight:900;color:rgba(255,255,255,.8);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase}
+.play-btn{background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50%;width:clamp(82px,20vw,104px);height:clamp(82px,20vw,104px);font-size:clamp(2.4rem,8vw,3.2rem);cursor:pointer;box-shadow:0 8px 0 rgba(0,0,0,.22),0 12px 28px rgba(255,107,107,.4);transition:transform .15s,box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;animation:playPulse 2.4s ease-in-out infinite}
+@keyframes playPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.play-btn:hover{transform:scale(1.1);animation:none}
+.play-btn:active{transform:scale(.94) translateY(4px);box-shadow:0 3px 0 rgba(0,0,0,.18);animation:none}
+.play-btn.playing{background:linear-gradient(135deg,#43e97b,#38f9d7);animation:none}
+.play-hint{font-size:clamp(.8rem,2.4vw,.93rem);font-weight:800;color:rgba(255,255,255,.75);margin-top:8px}
+
+/* For grade 1-3: show the written Spanish word too */
+.spanish-word-display{font-family:'Fredoka One',cursive;font-size:clamp(1.6rem,6vw,2.6rem);color:#7C4DFF;margin:6px 0 2px;min-height:1.2em}
+
+.q-text{font-size:clamp(1rem,3.5vw,1.25rem);font-weight:800;color:#455A64;margin-bottom:16px;line-height:1.4}
+
+/* choices */
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.pic-btn{border:4px solid #E0E0E0;border-radius:22px;padding:clamp(10px,3vw,18px) 5px clamp(7px,2vw,12px);font-size:clamp(2.8rem,11vw,4.6rem);cursor:pointer;background:#FAFAFA;transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;box-shadow:0 5px 0 #BDBDBD;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pic-btn .pic-label{font-size:clamp(.7rem,2vw,.85rem);font-weight:900;color:#90A4AE}
+.pic-btn:hover:not(:disabled){transform:translateY(-6px) scale(1.07);box-shadow:0 11px 0 #BDBDBD;border-color:#CE93D8;background:#F3E5F5}
+.pic-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #BDBDBD}
+.pic-btn:disabled{cursor:default}
+.pic-btn.correct{background:#E8F5E9!important;border-color:#66BB6A!important;box-shadow:0 5px 0 #388E3C;animation:pop .5s ease}
+.pic-btn.wrong{background:#FFEBEE!important;border-color:#EF9A9A!important;animation:shake .4s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+
+/* For grades 2-3: text-choice mode (pick Spanish word, not picture) */
+.text-choices{display:grid;grid-template-columns:1fr;gap:10px;margin-top:4px}
+.text-btn{border:3px solid #E0E0E0;border-radius:18px;padding:16px 20px;font-family:'Fredoka One',cursive;font-size:clamp(1.2rem,4.5vw,1.6rem);cursor:pointer;background:#FAFAFA;transition:transform .12s,box-shadow .12s,border-color .12s,background .12s;box-shadow:0 4px 0 #BDBDBD;color:#37474F;text-align:left;display:flex;align-items:center;gap:12px}
+.text-btn:hover:not(:disabled){transform:translateY(-4px);box-shadow:0 8px 0 #BDBDBD;border-color:#CE93D8;background:#F3E5F5}
+.text-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #BDBDBD}
+.text-btn:disabled{cursor:default}
+.text-btn.correct{background:#E8F5E9!important;border-color:#66BB6A!important;animation:pop .5s ease}
+.text-btn.wrong{background:#FFEBEE!important;border-color:#EF9A9A!important;animation:shake .4s ease}
+.text-btn .tb-emoji{font-size:1.6rem}
+
+.next-btn{margin-top:14px;background:linear-gradient(135deg,#a8ff78,#78ffd6);color:#2E7D32;border:none;border-radius:50px;padding:12px 38px;font-family:'Fredoka One',cursive;font-size:1.25rem;cursor:pointer;display:none;box-shadow:0 5px 0 #388E3C;transition:transform .15s,box-shadow .15s}
+.next-btn:hover{transform:translateY(-3px);box-shadow:0 8px 0 #388E3C}
+.next-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #388E3C}
+
+/* feedback */
+.feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:white;border-radius:30px;padding:24px 40px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.22);z-index:200;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;min-width:200px}
+.feedback.show{transform:translate(-50%,-50%) scale(1)}
+.fb-emoji{font-size:3.2rem}.fb-text{font-family:'Fredoka One',cursive;font-size:1.8rem;margin-top:5px}
+.feedback.good .fb-text{color:#43A047}.feedback.bad .fb-text{color:#EF5350}
+.fb-sub{font-size:.9rem;font-weight:800;color:#90A4AE;margin-top:4px}
+
+/* confetti */
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;overflow:hidden}
+.cp{position:absolute;animation:cf 1.4s ease-in forwards}
+@keyframes cf{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* game over */
+.gameover{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px;z-index:1;position:relative;animation:cardIn .5s cubic-bezier(.34,1.56,.64,1)}
+.gameover-card{background:rgba(255,255,255,.96);border-radius:36px;padding:38px 30px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;gap:14px}
+.gameover h2{font-family:'Fredoka One',cursive;font-size:clamp(2.2rem,9vw,3.6rem);color:#7C4DFF}
+.gameover p{font-size:1.2rem;font-weight:800;color:#455A64}
+.go-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.replay-btn{background:linear-gradient(135deg,#ff6b6b,#feca57);color:#7B2D00;border:none;border-radius:50px;padding:14px 36px;font-family:'Fredoka One',cursive;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.16);transition:transform .15s,box-shadow .15s}
+.replay-btn:hover{transform:translateY(-4px);box-shadow:0 10px 0 rgba(0,0,0,.16)}
+.levels-btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:50px;padding:14px 36px;font-family:'Fredoka One',cursive;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.16);transition:transform .15s,box-shadow .15s}
+.levels-btn:hover{transform:translateY(-4px);box-shadow:0 10px 0 rgba(0,0,0,.16)}
+</style>
+</head>
+<body>
+<script>
+for(let i=0;i<18;i++){const s=document.createElement('div');s.className='star';s.textContent=['⭐','🌟','✨'][i%3];s.style.cssText=`left:${Math.random()*100}%;font-size:${14+Math.random()*22}px;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*10}s`;document.body.appendChild(s)}
+</script>
+
+<header>
+  <h1>🌟 ¡Español Fun! 🌟</h1>
+  <p>Listen · Look · Learn! 🎧</p>
+</header>
+
+<div class="score-bar">
+  <span>⚡</span><span id="scoreNum">0</span>
+  <span class="stars" id="starsDisplay">☆☆☆☆☆</span>
+  <span id="levelTag" style="font-size:.85rem;background:rgba(255,255,255,.25);padding:3px 10px;border-radius:50px"></span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<!-- LEVEL SELECT -->
+<div class="level-screen" id="levelScreen">
+  <span class="top-emoji">🎓</span>
+  <h2>Choose Your Level!</h2>
+  <p class="subtitle">Pick the grade that matches you!</p>
+  <div class="level-grid">
+    <button class="level-card lc-k" onclick="startGame('K')">
+      <span class="lc-emoji">🌈</span>
+      <span class="lc-name" style="color:#E65100">Kindergarten</span>
+      <span class="lc-desc">Hear a Spanish word → pick the matching picture</span>
+    </button>
+    <button class="level-card lc-1" onclick="startGame('1')">
+      <span class="lc-emoji">🌱</span>
+      <span class="lc-name" style="color:#1565C0">1st Grade</span>
+      <span class="lc-desc">See + hear the word → pick the matching picture</span>
+    </button>
+    <button class="level-card lc-2" onclick="startGame('2')">
+      <span class="lc-emoji">🔥</span>
+      <span class="lc-name" style="color:#6A1B9A">2nd Grade</span>
+      <span class="lc-desc">See a picture → pick the correct Spanish word</span>
+    </button>
+    <button class="level-card lc-3" onclick="startGame('3')">
+      <span class="lc-emoji">🚀</span>
+      <span class="lc-name" style="color:#2E7D32">3rd Grade</span>
+      <span class="lc-desc">Hear the Spanish phrase → pick the English meaning</span>
+    </button>
+  </div>
+</div>
+
+<!-- QUIZ CARD -->
+<div class="card" id="quizCard" style="display:none">
+  <div class="top-bar">
+    <div class="q-label" id="qLabel">Question 1 of 10</div>
+    <div class="level-badge" id="levelBadge"></div>
+  </div>
+  <div class="play-zone">
+    <div class="play-zone-title" id="playZoneTitle">🎧 Hear the Spanish Word</div>
+    <button class="play-btn" id="playBtn" onclick="speakWord()">🔊</button>
+    <div class="play-hint" id="playHint">Tap to hear it!</div>
+  </div>
+  <div class="spanish-word-display" id="spanishWordDisplay"></div>
+  <div class="q-text" id="qText">Which picture matches the word?</div>
+  <div id="choicesGrid"></div>
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next ➡️</button>
+</div>
+
+<!-- GAME OVER -->
+<div class="gameover" id="gameOver">
+  <div class="gameover-card">
+    <div style="font-size:5rem">🏆</div>
+    <h2>¡Increíble!</h2>
+    <p>You finished! Great job! 🎊</p>
+    <p id="finalScore" style="font-size:1.4rem;color:#7C4DFF;font-weight:900"></p>
+    <div class="go-btns">
+      <button class="replay-btn" onclick="replayLevel()">Play Again! 🔄</button>
+      <button class="levels-btn" onclick="showLevels()">Change Level 🎓</button>
+    </div>
+  </div>
+</div>
+
+<div class="feedback" id="feedbackPopup">
+  <div class="fb-emoji" id="fbEmoji"></div>
+  <div class="fb-text" id="fbText"></div>
+  <div class="fb-sub"  id="fbSub"></div>
+</div>
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// WORD BANKS BY GRADE
+// K  : hear word → pick picture (3 picture choices)
+// 1st: see+hear word → pick picture (3 picture choices)
+// 2nd: see picture → pick Spanish word (3 text choices)
+// 3rd: hear phrase → pick English meaning (3 text choices)
+// ═══════════════════════════════════════════════════════════
+
+const BANK = {
+  K: [
+    // Basic concrete nouns a kindergartner knows
+    {spanish:"El Gato",      correct:"🐱", distractors:["🐶","🐟","🐰","🐸","🐷","🐻"]},
+    {spanish:"El Perro",     correct:"🐶", distractors:["🐱","🦊","🐺","🐮","🐰","🐸"]},
+    {spanish:"La Manzana",   correct:"🍎", distractors:["🍌","🍊","🍇","🍓","🍋","🫐"]},
+    {spanish:"El Sol",       correct:"☀️", distractors:["🌙","⭐","🌈","❄️","🌧️","⛈️"]},
+    {spanish:"La Luna",      correct:"🌙", distractors:["☀️","⭐","🌟","🌈","☁️","❄️"]},
+    {spanish:"La Flor",      correct:"🌸", distractors:["🌳","🍃","🌵","🍀","🌾","🌿"]},
+    {spanish:"El Árbol",     correct:"🌳", distractors:["🌸","🌵","🍀","🌾","🍁","🌿"]},
+    {spanish:"El Pez",       correct:"🐟", distractors:["🐸","🦀","🐠","🦑","🐬","🦈"]},
+    {spanish:"La Casa",      correct:"🏠", distractors:["🏫","🏰","⛺","🏗️","🏪","🏯"]},
+    {spanish:"El Coche",     correct:"🚗", distractors:["🚌","🚲","🚀","🛸","🚢","🚁"]},
+    {spanish:"El Pan",       correct:"🍞", distractors:["🧀","🍕","🥚","🍰","🌮","🥐"]},
+    {spanish:"El Helado",    correct:"🍦", distractors:["🍰","🍩","🍫","🍭","🧁","🍬"]},
+    {spanish:"El Globo",     correct:"🎈", distractors:["🎀","🎁","🎉","🪁","🛸","🪅"]},
+    {spanish:"La Pelota",    correct:"⚽", distractors:["🏀","🎾","🏈","🎱","🏓","🥎"]},
+    {spanish:"El Pájaro",    correct:"🐦", distractors:["🦋","🐝","🐛","🐞","🦎","🦜"]},
+    {spanish:"La Banana",    correct:"🍌", distractors:["🍎","🍊","🍇","🍓","🍋","🫐"]},
+    {spanish:"El Arco Iris", correct:"🌈", distractors:["☀️","🌙","⭐","❄️","🌊","🔥"]},
+    {spanish:"El Tren",      correct:"🚂", distractors:["🚗","🚌","✈️","🚁","⛵","🚀"]},
+    {spanish:"La Tortuga",   correct:"🐢", distractors:["🐊","🦎","🐸","🐍","🦕","🐠"]},
+    {spanish:"El Caballo",   correct:"🐴", distractors:["🦄","🐮","🐑","🐐","🦌","🐗"]},
+    {spanish:"El Elefante",  correct:"🐘", distractors:["🦏","🦛","🦒","🐪","🦓","🦁"]},
+    {spanish:"La Pizza",     correct:"🍕", distractors:["🌮","🍔","🍜","🍣","🍞","🌯"]},
+    {spanish:"El Cohete",    correct:"🚀", distractors:["✈️","🛸","🚁","⛵","🎈","🚂"]},
+    {spanish:"La Mariposa",  correct:"🦋", distractors:["🐝","🐛","🐞","🦗","🪲","🦟"]},
+    {spanish:"El Libro",     correct:"📚", distractors:["✏️","📏","📐","🖍️","🖊️","🎒"]},
+  ],
+
+  // ── 1st Grade: same picture mechanic but richer vocabulary ──
+  // Body parts, classroom, family, colors, weather, actions
+  1: [
+    {spanish:"La Cabeza",    correct:"🤯", hint:"head",       distractors:["🦷","👁️","👂","🦴","🫀","💪"]},
+    {spanish:"Los Ojos",     correct:"👁️",  hint:"eyes",       distractors:["👂","👃","🦷","🤯","💪","🦴"]},
+    {spanish:"La Boca",      correct:"👄",  hint:"mouth",      distractors:["👁️","👃","👂","🦷","🤯","🫀"]},
+    {spanish:"La Mano",      correct:"✋",  hint:"hand",       distractors:["🦶","💪","🦴","👁️","👂","🫀"]},
+    {spanish:"El Corazón",   correct:"❤️",  hint:"heart",      distractors:["⭐","💎","🎵","🔔","🎀","🌈"]},
+    {spanish:"El Maestro",   correct:"👨‍🏫", hint:"teacher",    distractors:["👩‍⚕️","👮","👷","👨‍🍳","🧑‍🚒","👨‍✈️"]},
+    {spanish:"El Lápiz",     correct:"✏️",  hint:"pencil",     distractors:["📚","📏","📐","🖍️","🖊️","🎒"]},
+    {spanish:"La Silla",     correct:"🪑",  hint:"chair",      distractors:["🛏️","🛁","🪞","🚪","🪟","🛋️"]},
+    {spanish:"La Mesa",      correct:"🪵",  hint:"table",      distractors:["🪑","🛏️","🛁","🚪","🛋️","🪞"]},
+    {spanish:"El Agua",      correct:"💧",  hint:"water",      distractors:["🔥","❄️","🌊","☁️","⚡","🌧️"]},
+    {spanish:"La Leche",     correct:"🥛",  hint:"milk",       distractors:["💧","🍊","🍵","🧃","🫖","🍶"]},
+    {spanish:"El Número",    correct:"🔢",  hint:"number",     distractors:["🔤","🔣","🔡","🔠","📊","📈"]},
+    {spanish:"El Color",     correct:"🎨",  hint:"color",      distractors:["📚","✏️","🖍️","📐","🎵","🎭"]},
+    {spanish:"La Lluvia",    correct:"🌧️",  hint:"rain",       distractors:["☀️","❄️","🌈","⛈️","🌪️","☁️"]},
+    {spanish:"El Viento",    correct:"🌪️",  hint:"wind",       distractors:["🌧️","☀️","❄️","🌊","🔥","⛈️"]},
+    {spanish:"La Familia",   correct:"👨‍👩‍👧‍👦",hint:"family",    distractors:["👫","🧑‍🤝‍🧑","🐕‍🦺","🏠","🎪","🎭"]},
+    {spanish:"La Mamá",      correct:"👩",  hint:"mom",        distractors:["👨","👧","👦","👴","👵","🧒"]},
+    {spanish:"El Papá",      correct:"👨",  hint:"dad",        distractors:["👩","👧","👦","👴","👵","🧒"]},
+    {spanish:"El Amigo",     correct:"🤝",  hint:"friend",     distractors:["👫","❤️","🎁","😊","🫂","🎈"]},
+    {spanish:"La Escuela",   correct:"🏫",  hint:"school",     distractors:["🏠","🏥","🏪","🏰","🏗️","⛪"]},
+    {spanish:"El Rojo",      correct:"🔴",  hint:"red",        distractors:["🔵","🟡","🟢","🟠","🟣","⚫"]},
+    {spanish:"El Azul",      correct:"🔵",  hint:"blue",       distractors:["🔴","🟡","🟢","🟠","🟣","⚫"]},
+    {spanish:"El Verde",     correct:"🟢",  hint:"green",      distractors:["🔴","🔵","🟡","🟠","🟣","⚫"]},
+    {spanish:"El Amarillo",  correct:"🟡",  hint:"yellow",     distractors:["🔴","🔵","🟢","🟠","🟣","⚫"]},
+    {spanish:"La Noche",     correct:"🌃",  hint:"night",      distractors:["🌅","🌇","🌄","🌠","🌆","🏙️"]},
+  ],
+
+  // ── 2nd Grade: see picture → pick correct SPANISH word (3 text options) ──
+  // More complex vocab: food groups, community, time, verbs, adjectives
+  2: [
+    {emoji:"🏥", correct:"El Hospital",  wrong:["La Escuela","El Mercado"]},
+    {emoji:"🌽", correct:"El Maíz",      wrong:["La Zanahoria","El Tomate"]},
+    {emoji:"🥕", correct:"La Zanahoria", wrong:["El Maíz","El Brócoli"]},
+    {emoji:"🍅", correct:"El Tomate",    wrong:["La Zanahoria","El Maíz"]},
+    {emoji:"🌮", correct:"El Taco",      wrong:["La Pizza","El Sándwich"]},
+    {emoji:"🥪", correct:"El Sándwich",  wrong:["El Taco","La Pizza"]},
+    {emoji:"🎒", correct:"La Mochila",   wrong:["La Cartera","El Bolso"]},
+    {emoji:"🚌", correct:"El Autobús",   wrong:["El Tren","El Coche"]},
+    {emoji:"🌍", correct:"El Mundo",     wrong:["El País","La Ciudad"]},
+    {emoji:"👕", correct:"La Camisa",    wrong:["Los Pantalones","Los Zapatos"]},
+    {emoji:"👟", correct:"Los Zapatos",  wrong:["La Camisa","El Sombrero"]},
+    {emoji:"🎩", correct:"El Sombrero",  wrong:["Los Zapatos","La Camisa"]},
+    {emoji:"🌙", correct:"La Luna",      wrong:["El Sol","Las Estrellas"]},
+    {emoji:"⭐", correct:"Las Estrellas",wrong:["La Luna","El Sol"]},
+    {emoji:"🌊", correct:"El Océano",    wrong:["El Río","El Lago"]},
+    {emoji:"🏔️", correct:"La Montaña",  wrong:["El Volcán","El Desierto"]},
+    {emoji:"🌵", correct:"El Desierto",  wrong:["La Montaña","El Bosque"]},
+    {emoji:"🌲", correct:"El Bosque",    wrong:["El Jardín","El Campo"]},
+    {emoji:"🧲", correct:"El Imán",      wrong:["El Hierro","La Piedra"]},
+    {emoji:"🎭", correct:"El Teatro",    wrong:["El Cine","El Museo"]},
+    {emoji:"🏊", correct:"Nadar",        wrong:["Correr","Saltar"]},
+    {emoji:"🏃", correct:"Correr",       wrong:["Nadar","Volar"]},
+    {emoji:"😴", correct:"Dormir",       wrong:["Comer","Leer"]},
+    {emoji:"📖", correct:"Leer",         wrong:["Escribir","Dibujar"]},
+    {emoji:"✍️", correct:"Escribir",     wrong:["Leer","Dibujar"]},
+  ],
+
+  // ── 3rd Grade: hear a phrase → pick English meaning (text choices) ──
+  // Phrases, adjectives, time expressions, feelings, sentences
+  3: [
+    {spanish:"Me llamo...",         correct:"My name is...",        wrong:["I am hungry","Good morning"]},
+    {spanish:"Buenos días",         correct:"Good morning",         wrong:["Good night","How are you?"]},
+    {spanish:"Buenas noches",       correct:"Good night",           wrong:["Good morning","See you later"]},
+    {spanish:"¿Cómo estás?",        correct:"How are you?",         wrong:["What is your name?","Where are you?"]},
+    {spanish:"Estoy bien",          correct:"I am fine",            wrong:["I am tired","I am happy"]},
+    {spanish:"Por favor",           correct:"Please",               wrong:["Thank you","You're welcome"]},
+    {spanish:"Gracias",             correct:"Thank you",            wrong:["Please","I'm sorry"]},
+    {spanish:"De nada",             correct:"You're welcome",       wrong:["Thank you","Excuse me"]},
+    {spanish:"Lo siento",           correct:"I'm sorry",            wrong:["Excuse me","Please"]},
+    {spanish:"¿Dónde está...?",     correct:"Where is...?",         wrong:["What is...?","When is...?"]},
+    {spanish:"Tengo hambre",        correct:"I am hungry",          wrong:["I am thirsty","I am tired"]},
+    {spanish:"Tengo sed",           correct:"I am thirsty",         wrong:["I am hungry","I am cold"]},
+    {spanish:"Hace calor",          correct:"It is hot",            wrong:["It is cold","It is raining"]},
+    {spanish:"Hace frío",           correct:"It is cold",           wrong:["It is hot","It is windy"]},
+    {spanish:"Me gusta...",         correct:"I like...",            wrong:["I don't like...","I want..."]},
+    {spanish:"No me gusta...",      correct:"I don't like...",      wrong:["I like...","I need..."]},
+    {spanish:"¿Cuántos años tienes?",correct:"How old are you?",   wrong:["When is your birthday?","Where do you live?"]},
+    {spanish:"Vivo en...",          correct:"I live in...",         wrong:["I go to...","I work in..."]},
+    {spanish:"Hoy es lunes",        correct:"Today is Monday",      wrong:["Today is Tuesday","Yesterday was Monday"]},
+    {spanish:"La semana pasada",    correct:"Last week",            wrong:["Next week","This week"]},
+    {spanish:"Muchos",              correct:"Many / A lot",         wrong:["A little","None"]},
+    {spanish:"Pequeño",             correct:"Small",                wrong:["Big","Tall"]},
+    {spanish:"Grande",              correct:"Big / Large",          wrong:["Small","Short"]},
+    {spanish:"Rápido",              correct:"Fast",                 wrong:["Slow","Strong"]},
+    {spanish:"¿Qué hora es?",       correct:"What time is it?",     wrong:["What day is it?","What year is it?"]},
+  ],
+};
+
+const ROUND_SIZE = 10;
+const LEVEL_LABELS = {K:"Kindergarten","1":"1st Grade","2":"2nd Grade","3":"3rd Grade"};
+const LEVEL_BADGES = {K:"badge-k","1":"badge-1","2":"badge-2","3":"badge-3"};
+
+let currentLevel='K', round=[], idx=0, score=0, answered=false, currentWord=null;
+let spanishVoice=null;
+
+function loadVoices(){
+  const v=speechSynthesis.getVoices();
+  spanishVoice=v.find(x=>x.lang==='es-MX')||v.find(x=>x.lang==='es-US')||v.find(x=>x.lang.startsWith('es-'))||null;
+}
+speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
+
+function speakWord(){
+  if(!currentWord)return;
+  const text = currentWord.spanish || currentWord.phrase || '';
+  if(!text)return;
+  speechSynthesis.cancel();
+  const btn=document.getElementById('playBtn');
+  btn.classList.add('playing'); btn.textContent='🔈';
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='es-MX'; u.rate=0.78; u.pitch=1.1;
+  if(spanishVoice)u.voice=spanishVoice;
+  u.onend=u.onerror=()=>{btn.classList.remove('playing');btn.textContent='🔊'};
+  speechSynthesis.speak(u);
+}
+
+function shuffle(a){return[...a].sort(()=>Math.random()-.5)}
+
+function startGame(level){
+  currentLevel = level || currentLevel;
+  round = shuffle(BANK[currentLevel]).slice(0, ROUND_SIZE);
+  idx=0; score=0; answered=false;
+  document.getElementById('levelScreen').style.display='none';
+  document.getElementById('gameOver').style.display='none';
+  document.getElementById('quizCard').style.display='block';
+  document.getElementById('levelTag').textContent = LEVEL_LABELS[currentLevel];
+  updateStars(0);
+  loadQuestion();
+}
+
+function replayLevel(){ startGame(); }
+function showLevels(){
+  document.getElementById('gameOver').style.display='none';
+  document.getElementById('quizCard').style.display='none';
+  document.getElementById('levelScreen').style.display='block';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('scoreNum').textContent='0';
+  document.getElementById('starsDisplay').textContent='☆☆☆☆☆';
+  document.getElementById('levelTag').textContent='';
+}
+
+function loadQuestion(){
+  answered=false;
+  currentWord = round[idx];
+  const lv = currentLevel;
+
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('qLabel').textContent=`Question ${idx+1} of ${ROUND_SIZE}`;
+  document.getElementById('progressFill').style.width=((idx/ROUND_SIZE)*100)+'%';
+
+  // badge
+  const badge = document.getElementById('levelBadge');
+  badge.textContent = LEVEL_LABELS[lv];
+  badge.className = 'level-badge ' + LEVEL_BADGES[lv];
+
+  const pb = document.getElementById('playBtn');
+  pb.classList.remove('playing'); pb.textContent='🔊';
+
+  const swDisplay = document.getElementById('spanishWordDisplay');
+  const choicesDiv = document.getElementById('choicesGrid');
+  choicesDiv.className = '';
+  choicesDiv.innerHTML = '';
+
+  // ── Kindergarten: hear → pick picture ──
+  if(lv==='K'){
+    document.getElementById('playZoneTitle').textContent='🎧 Hear the Spanish Word';
+    document.getElementById('playHint').textContent='Tap to hear it!';
+    swDisplay.textContent='';
+    document.getElementById('qText').textContent='Which picture matches the word? 👇';
+
+    const dist=shuffle(currentWord.distractors).slice(0,2);
+    const choices=shuffle([{emoji:currentWord.correct,ok:true},{emoji:dist[0],ok:false},{emoji:dist[1],ok:false}]);
+    choicesDiv.className='choices';
+    choices.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='pic-btn';
+      b.innerHTML=`<span>${c.emoji}</span><span class="pic-label">?</span>`;
+      b.onclick=()=>checkAnswerPic(b,c.ok,currentWord.correct);
+      choicesDiv.appendChild(b);
+    });
+    setTimeout(speakWord,400);
+  }
+
+  // ── 1st Grade: see+hear → pick picture ──
+  else if(lv==='1'){
+    document.getElementById('playZoneTitle').textContent='🎧 Hear & See the Word';
+    document.getElementById('playHint').textContent='Tap to hear it again!';
+    swDisplay.textContent=currentWord.spanish;
+    document.getElementById('qText').textContent='Which picture matches the word? 👇';
+
+    const dist=shuffle(currentWord.distractors).slice(0,2);
+    const choices=shuffle([{emoji:currentWord.correct,ok:true},{emoji:dist[0],ok:false},{emoji:dist[1],ok:false}]);
+    choicesDiv.className='choices';
+    choices.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='pic-btn';
+      b.innerHTML=`<span>${c.emoji}</span><span class="pic-label">?</span>`;
+      b.onclick=()=>checkAnswerPic(b,c.ok,currentWord.correct);
+      choicesDiv.appendChild(b);
+    });
+    setTimeout(speakWord,400);
+  }
+
+  // ── 2nd Grade: see picture → pick Spanish word ──
+  else if(lv==='2'){
+    document.getElementById('playZoneTitle').textContent='🖼️ Look at the Picture';
+    document.getElementById('playHint').textContent='';
+    // show big picture where play button is
+    pb.style.display='none'; // hide play btn, show picture
+    // Actually repurpose: show emoji in play zone instead
+    pb.style.display='inline-flex';
+    pb.style.pointerEvents='none';
+    pb.style.animation='none';
+    pb.style.background='linear-gradient(135deg,#f5f5f5,#eeeeee)';
+    pb.style.boxShadow='0 4px 0 #BDBDBD';
+    pb.textContent=currentWord.emoji;
+    pb.style.fontSize='clamp(3rem,12vw,4.5rem)';
+
+    swDisplay.textContent='';
+    document.getElementById('qText').textContent='Which Spanish word matches this picture? 👇';
+
+    const choices=shuffle([currentWord.correct,...currentWord.wrong]);
+    choicesDiv.className='text-choices';
+    choices.forEach(label=>{
+      const b=document.createElement('button');
+      b.className='text-btn';
+      b.innerHTML=`<span>${label}</span>`;
+      b.onclick=()=>checkAnswerText(b,label,currentWord.correct);
+      choicesDiv.appendChild(b);
+    });
+  }
+
+  // ── 3rd Grade: hear phrase → pick English meaning ──
+  else if(lv==='3'){
+    pb.style.display='inline-flex'; pb.style.pointerEvents='';
+    pb.style.animation=''; pb.style.background=''; pb.style.boxShadow='';
+    pb.style.fontSize=''; pb.textContent='🔊';
+    document.getElementById('playZoneTitle').textContent='🎧 Hear the Spanish Phrase';
+    document.getElementById('playHint').textContent='Tap to hear it!';
+    swDisplay.textContent='';
+    document.getElementById('qText').textContent='What does this phrase mean in English? 👇';
+
+    const choices=shuffle([currentWord.correct,...currentWord.wrong]);
+    choicesDiv.className='text-choices';
+    choices.forEach(label=>{
+      const b=document.createElement('button');
+      b.className='text-btn';
+      b.innerHTML=`<span>${label}</span>`;
+      b.onclick=()=>checkAnswerText(b,label,currentWord.correct);
+      choicesDiv.appendChild(b);
+    });
+    setTimeout(speakWord,400);
+  }
+
+  // card animation
+  const card=document.getElementById('quizCard');
+  card.style.animation='none'; card.offsetHeight;
+  card.style.animation='cardIn .4s cubic-bezier(.34,1.56,.64,1)';
+}
+
+function checkAnswerPic(btn,ok,correctEmoji){
+  if(answered)return; answered=true;
+  document.querySelectorAll('.pic-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.querySelector('span').textContent===correctEmoji){
+      b.classList.add('correct');
+      b.querySelector('.pic-label').textContent='✓';
+    }
+  });
+  if(ok){score++;updateStars(score);showFeedback(true);launchConfetti()}
+  else{btn.classList.add('wrong');showFeedback(false)}
+  setTimeout(()=>{document.getElementById('nextBtn').style.display='inline-block'},1300);
+}
+
+function checkAnswerText(btn,chosen,correct){
+  if(answered)return; answered=true;
+  document.querySelectorAll('.text-btn').forEach(b=>{
+    b.disabled=true;
+    const t=b.querySelector('span').textContent;
+    if(t===correct)b.classList.add('correct');
+  });
+  if(chosen===correct){score++;updateStars(score);showFeedback(true);launchConfetti()}
+  else{btn.classList.add('wrong');showFeedback(false)}
+  setTimeout(()=>{document.getElementById('nextBtn').style.display='inline-block'},1300);
+}
+
+function showFeedback(good){
+  const p=document.getElementById('feedbackPopup');
+  const ge=['🎉','⭐','🌟','🥳','💪','🔥','👏','🎊'];
+  const be=['😅','💪','🤔','😬','🙈'];
+  p.className='feedback '+(good?'good':'bad');
+  document.getElementById('fbEmoji').textContent=good?ge[~~(Math.random()*ge.length)]:be[~~(Math.random()*be.length)];
+  document.getElementById('fbText').textContent=good?'¡Correcto! 🎊':'¡Casi! 💪';
+  document.getElementById('fbSub').textContent=good?'Amazing job!':'Keep trying!';
+  p.classList.add('show');
+  setTimeout(()=>p.classList.remove('show'),1500);
+}
+
+function updateStars(s){
+  const f=Math.round((s/ROUND_SIZE)*5);
+  document.getElementById('starsDisplay').textContent='⭐'.repeat(f)+'☆'.repeat(5-f);
+  document.getElementById('scoreNum').textContent=s;
+}
+
+function nextQuestion(){
+  // reset play btn style in case grade 2 changed it
+  const pb=document.getElementById('playBtn');
+  pb.style.display=''; pb.style.pointerEvents=''; pb.style.animation='';
+  pb.style.background=''; pb.style.boxShadow=''; pb.style.fontSize=''; pb.textContent='🔊';
+  idx++;
+  if(idx>=ROUND_SIZE)showGameOver(); else loadQuestion();
+}
+
+function showGameOver(){
+  document.getElementById('quizCard').style.display='none';
+  document.getElementById('gameOver').style.display='flex';
+  const pct=Math.round((score/ROUND_SIZE)*100);
+  const msg=pct===100?'🏆 ¡Perfecto!':pct>=80?'🌟 ¡Excelente!':pct>=60?'😊 ¡Bien!':'💪 ¡Sigue así!';
+  document.getElementById('finalScore').textContent=`${score} / ${ROUND_SIZE} — ${msg}`;
+  document.getElementById('progressFill').style.width='100%';
+  launchConfetti(90);
+}
+
+function launchConfetti(n=40){
+  const wrap=document.getElementById('confettiWrap');
+  const colors=['#FFD600','#FF7043','#66BB6A','#4FC3F7','#CE93D8','#F48FB1','#fff','#a8ff78'];
+  wrap.innerHTML='';
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div'); p.className='cp';
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[~~(Math.random()*colors.length)]};animation-delay:${Math.random()*.9}s;animation-duration:${.9+Math.random()*.9}s;border-radius:${Math.random()>.5?'50%':'3px'};width:${8+Math.random()*12}px;height:${8+Math.random()*12}px;`;
+    wrap.appendChild(p);
+    setTimeout(()=>p.remove(),2400);
+  }
+}
+</script>
+</body>
+</html>
